@@ -11,3 +11,7 @@ func Register(user models.User) (err error) {
 	}
 	return repository.CreateUser(&user)
 }
+
+func Login(user models.User) (err error) {
+	return repository.UserAuthentication(user)
+}

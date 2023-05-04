@@ -38,10 +38,27 @@ func CheckUserExists(username string) (err error) {
 
 	switch {
 	case err == nil:
-		return errors.New("username already exists")
+		return errors.New("user exists")
 	case err != mongo.ErrNoDocuments:
 		return err
 	default:
 		return nil
 	}
+}
+
+func UserAuthentication(user models.User) (err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var foundUser models.User
+	err = collection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser)
+	if err != nil {
+		return errors.New("user not found")
+	}
+
+	if !util.CheckPassword(user.Password, foundUser.Password) {
+		return errors.New("invalid password")
+	}
+
+	return nil
 }
