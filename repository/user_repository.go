@@ -11,7 +11,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo" // for BSON IDs
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var collection = db.Client.Database("Go-React-Chat").Collection("users")
