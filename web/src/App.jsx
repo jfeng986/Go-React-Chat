@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./Login";
+import LoginAndRegister from "./LoginAndRegister";
 import Chat from "./Chat";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<LoginAndRegister />} />
         <Route path="/chat" element={<Chat />} />
       </Routes>
     </Router>

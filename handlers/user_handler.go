@@ -10,13 +10,10 @@ import (
 	"Go-React-Chat/util"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 var userInfo models.User
-
-func Hello(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Hello"})
-}
 
 func Register(c *gin.Context) {
 	if err := c.BindJSON(&userInfo); err != nil {
@@ -70,4 +67,23 @@ func JwtAuth(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "Valid token"})
 	}
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+
+	CheckOrigin: func(r *http.Request) bool { return true },
+}
+
+func WsHandler(c *gin.Context) {
+	w := c.Writer
+	r := c.Request
+
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	service.Reader(ws)
 }
