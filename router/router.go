@@ -25,8 +25,9 @@ func InitRouter() {
 
 	r.POST("/login", handlers.Login)
 	r.POST("/register", handlers.Register)
-	r.GET("/profile", handlers.JwtAuth)
+	r.GET("/jwtauth", handlers.JwtAuth)
 	r.GET("/ws", handlers.WsHandler)
+	// r.GET("/profile", handlers.Profile)
 }
 
 func Start(addr string) error {

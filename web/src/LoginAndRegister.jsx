@@ -13,7 +13,7 @@ function LoginAndRegister() {
       const jwtToken = localStorage.getItem("jwt");
       if (jwtToken) {
         try {
-          const response = await axios.get("http://localhost:8080/profile", {
+          const response = await axios.get("http://localhost:8080/jwtauth", {
             headers: {
               Authorization: `Bearer ${jwtToken}`,
             },

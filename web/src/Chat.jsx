@@ -4,13 +4,17 @@ import axios from "axios";
 
 const Chat = () => {
   const navigate = useNavigate();
+  const [websocket, setWebsocket] = useState(null);
+  const [message, setMessage] = useState("");
+  const [onlinePeople, setOnlinePeople] = useState({});
+  //const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     const checkJwtToken = async () => {
       const jwtToken = localStorage.getItem("jwt");
       if (jwtToken) {
         try {
-          const response = await axios.get("http://localhost:8080/profile", {
+          const response = await axios.get("http://localhost:8080/jwtauth", {
             headers: {
               Authorization: `Bearer ${jwtToken}`,
             },
@@ -35,21 +39,36 @@ const Chat = () => {
     navigate("/");
   };
 
-  const [ws, setWs] = useState(null);
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-
   useEffect(() => {
     const websocket = new WebSocket("ws://localhost:8080/ws");
-    setWs(websocket);
-
+    setWebsocket(websocket);
+    /*
     return () => {
       if (websocket) {
         websocket.close();
       }
     };
+    */
+    websocket.addEventListener("message", handleMessage);
   }, []);
 
+  function handleMessage(event) {
+    const messageData = JSON.parse(event.data);
+    if ("online" in messageData) {
+      showOnlineUser(messageData.online);
+    } else {
+      console.log(messageData);
+    }
+  }
+
+  const sendMessage = () => {
+    if (websocket && message) {
+      websocket.send(message);
+      setMessage("");
+    }
+  };
+
+  /*
   useEffect(() => {
     if (ws) {
       ws.onmessage = (event) => {
@@ -57,34 +76,44 @@ const Chat = () => {
       };
     }
   }, [ws]);
+  */
 
-  const sendMessage = () => {
-    if (ws && message) {
-      ws.send(message);
-      setMessage("");
-    }
-  };
+  function showOnlinePeople(onlinePeople) {
+    const onlinePeopleSet = {};
+    onlinePeople.forEach(({ userId, username }) => {
+      onlinePeopleSet[userId] = username;
+    });
+    setOnlinePeople(onlinePeopleSet);
+  }
 
   return (
     <div>
-      <h1>Welcome to Chat</h1>
-      <button onClick={handleLogout}>Logout</button>
-      <br />
-
-      <h1>Chat</h1>
-
-      <div>
-        {messages.map((msg, index) => (
-          <p key={index}>{msg}</p>
-        ))}
+      <div className="flex h-screen">
+        <div className="bg-blue-100 w-1/5 pl-4 pt-4">
+          <div className="text-blue-600 font-bold flex gap-2 mb-4">
+            GO React Chat
+          </div>
+          {Object.keys(onlinePeople).map((userId) => (
+            <div key={userId} className="border-b border-gray-100 py-2">
+              {onlinePeople[userId]}
+            </div>
+          ))}
+          <button onClick={handleLogout}>Logout</button>
+        </div>
+        <div className="bg-blue-300 w-4/5 p-1 flex flex-col">
+          <div className="flex-grow">messages</div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Message to"
+              className="bg-white border p-2 rounded-lg flex-grow"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <button onClick={sendMessage}>Send</button>
+          </div>
+        </div>
       </div>
-
-      <input
-        type="text"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      />
-      <button onClick={sendMessage}>Send</button>
     </div>
   );
 };
