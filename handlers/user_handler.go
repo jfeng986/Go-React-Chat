@@ -76,3 +76,13 @@ func JwtAuth(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "Valid token", "jwtAuthResponse": jwtAuthResponse})
 	}
 }
+
+func GetUsers(c *gin.Context) {
+	users, err := service.GetUsers()
+	if err != nil {
+		log.Printf("Failed to get users: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully got users", "users": users})
+}

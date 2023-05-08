@@ -16,21 +16,10 @@ const Chat = () => {
   useEffect(() => {
     const checkJwtToken = async () => {
       const jwtToken = localStorage.getItem("jwt");
-      const storedUsername = localStorage.getItem("username");
-      const storedUserID = localStorage.getItem("id");
-
-      if (storedUsername) {
-        setUsername(storedUsername);
-      }
-      if (storedUserID) {
-        setID(storedUserID);
-      }
-
       if (!jwtToken) {
         clearStorageAndNavigate();
         return;
       }
-
       try {
         const response = await axios.get("http://localhost:8080/jwtauth", {
           headers: {
@@ -41,6 +30,8 @@ const Chat = () => {
         if (response.status != 200) {
           clearStorageAndNavigate();
         }
+        setUsername(response.data.jwtAuthResponse.username);
+        setID(response.data.jwtAuthResponse.id);
       } catch (error) {
         clearStorageAndNavigate();
       }
@@ -48,8 +39,6 @@ const Chat = () => {
 
     const clearStorageAndNavigate = () => {
       localStorage.removeItem("jwt");
-      localStorage.removeItem("username");
-      localStorage.removeItem("id");
       navigate("/");
     };
 
@@ -64,14 +53,14 @@ const Chat = () => {
   useEffect(() => {
     const websocket = new WebSocket("ws://localhost:8080/ws");
     setWebsocket(websocket);
-    /*
+
     return () => {
       if (websocket) {
         websocket.close();
       }
     };
-    */
-    websocket.addEventListener("message", handleMessage);
+
+    //websocket.addEventListener("message", handleMessage);
   }, []);
 
   function handleMessage(event) {
@@ -110,8 +99,6 @@ const Chat = () => {
 
   return (
     <div>
-      <h1>Welcome {username}!</h1>
-      <p>Your ID is: {ID}</p>
       <div className="flex h-screen">
         <div className="bg-blue-100 w-1/5 pl-4 pt-4">
           <div className="text-blue-600 font-bold flex gap-2 mb-4">
@@ -122,6 +109,8 @@ const Chat = () => {
               {onlinePeople[userId]}
             </div>
           ))}
+          <h1>Welcome {username}!</h1>
+          <p>Your ID is: {ID}</p>
           <button onClick={handleLogout}>Logout</button>
         </div>
         <div className="bg-blue-300 w-4/5 p-1 flex flex-col">

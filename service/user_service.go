@@ -1,13 +1,8 @@
 package service
 
 import (
-	"fmt"
-	"log"
-
 	"Go-React-Chat/models"
 	"Go-React-Chat/repository"
-
-	"github.com/gorilla/websocket"
 )
 
 func Register(registerRequest models.RegisterRequest) (*models.RegisterResponse, error) {
@@ -25,19 +20,10 @@ func Login(loginRequest models.LoginRequest) (*models.LoginResponse, error) {
 	return loginResponse, nil
 }
 
-func Reader(conn *websocket.Conn) {
-	for {
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		fmt.Println(string(p))
-
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
-		}
+func GetUsers() ([]models.GetUsersResponse, error) {
+	users, err := repository.GetUsers()
+	if err != nil {
+		return nil, err
 	}
+	return users, nil
 }
