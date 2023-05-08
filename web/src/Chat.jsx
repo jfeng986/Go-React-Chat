@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import UserContext from "./UserContext";
+
 import axios from "axios";
 
 const Chat = () => {
@@ -9,28 +11,37 @@ const Chat = () => {
   const [onlinePeople, setOnlinePeople] = useState({});
   //const [messages, setMessages] = useState([]);
 
+  const { username, ID, setUsername, setID } = useContext(UserContext);
+
   useEffect(() => {
     const checkJwtToken = async () => {
       const jwtToken = localStorage.getItem("jwt");
-      if (jwtToken) {
-        try {
-          const response = await axios.get("http://localhost:8080/jwtauth", {
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-            },
-          });
-          if (response.status != 200) {
-            localStorage.removeItem("jwt");
-            navigate("/");
-          }
-        } catch (error) {
-          localStorage.removeItem("jwt");
-          navigate("/");
+      if (!jwtToken) {
+        clearStorageAndNavigate();
+        return;
+      }
+      try {
+        const response = await axios.get("http://localhost:8080/jwtauth", {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        });
+
+        if (response.status != 200) {
+          clearStorageAndNavigate();
         }
-      } else {
-        navigate("/");
+        setUsername(response.data.jwtAuthResponse.username);
+        setID(response.data.jwtAuthResponse.id);
+      } catch (error) {
+        clearStorageAndNavigate();
       }
     };
+
+    const clearStorageAndNavigate = () => {
+      localStorage.removeItem("jwt");
+      navigate("/");
+    };
+
     checkJwtToken();
   }, []);
 
@@ -42,14 +53,14 @@ const Chat = () => {
   useEffect(() => {
     const websocket = new WebSocket("ws://localhost:8080/ws");
     setWebsocket(websocket);
-    /*
+
     return () => {
       if (websocket) {
         websocket.close();
       }
     };
-    */
-    websocket.addEventListener("message", handleMessage);
+
+    //websocket.addEventListener("message", handleMessage);
   }, []);
 
   function handleMessage(event) {
@@ -98,6 +109,8 @@ const Chat = () => {
               {onlinePeople[userId]}
             </div>
           ))}
+          <h1>Welcome {username}!</h1>
+          <p>Your ID is: {ID}</p>
           <button onClick={handleLogout}>Logout</button>
         </div>
         <div className="bg-blue-300 w-4/5 p-1 flex flex-col">

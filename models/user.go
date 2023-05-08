@@ -25,3 +25,8 @@ type LoginResponse struct {
 	ID       string `bson:"_id,omitempty" json:"id"`
 	Username string `bson:"username" json:"username" binding:"required"`
 }
+
+type GetUsersResponse struct {
+	ID       string `bson:"_id,omitempty" json:"id"`
+	Username string `bson:"username" json:"username" binding:"required"`
+}

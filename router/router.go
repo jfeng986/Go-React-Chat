@@ -27,6 +27,7 @@ func InitRouter() {
 	r.POST("/register", handlers.Register)
 	r.GET("/jwtauth", handlers.JwtAuth)
 	r.GET("/ws", handlers.WsHandler)
+	r.GET("/users", handlers.GetUsers)
 	// r.GET("/profile", handlers.Profile)
 }
 
