@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import UserContext from "./UserContext";
 
 import axios from "axios";
 
 function LoginAndRegister() {
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
+  const { setUsername: setLoggedInUsername, setID } = useContext(UserContext);
 
   useEffect(() => {
     const checkJwtToken = async () => {
@@ -37,6 +39,12 @@ function LoginAndRegister() {
       });
       if (response.status == 200) {
         const token = response.headers["authorization"].split(" ")[1];
+        //console.log(response.data.loginResponse.id);
+        setUsername(response.data.loginResponse.username);
+        setID(response.data.loginResponse.id);
+        setLoggedInUsername(response.data.loginResponse.username);
+        localStorage.setItem("username", response.data.loginResponse.username);
+        localStorage.setItem("id", response.data.loginResponse.id);
         localStorage.setItem("jwt", token);
         navigate("/chat");
       } else {

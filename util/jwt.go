@@ -15,12 +15,14 @@ const TokenExpireDuration = time.Hour * 24
 
 type Claims struct {
 	Username string `json:"username"`
+	ID       string `json:"id"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(username string) (string, error) {
+func GenerateToken(username, id string) (string, error) {
 	claims := &Claims{
 		username,
+		id,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExpireDuration)),
 			Issuer:    "Go-React-Chat",

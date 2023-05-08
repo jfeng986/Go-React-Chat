@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import UserContext from "./UserContext";
+
 import axios from "axios";
 
 const Chat = () => {
@@ -9,28 +11,48 @@ const Chat = () => {
   const [onlinePeople, setOnlinePeople] = useState({});
   //const [messages, setMessages] = useState([]);
 
+  const { username, ID, setUsername, setID } = useContext(UserContext);
+
   useEffect(() => {
     const checkJwtToken = async () => {
       const jwtToken = localStorage.getItem("jwt");
-      if (jwtToken) {
-        try {
-          const response = await axios.get("http://localhost:8080/jwtauth", {
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-            },
-          });
-          if (response.status != 200) {
-            localStorage.removeItem("jwt");
-            navigate("/");
-          }
-        } catch (error) {
-          localStorage.removeItem("jwt");
-          navigate("/");
+      const storedUsername = localStorage.getItem("username");
+      const storedUserID = localStorage.getItem("id");
+
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+      if (storedUserID) {
+        setID(storedUserID);
+      }
+
+      if (!jwtToken) {
+        clearStorageAndNavigate();
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://localhost:8080/jwtauth", {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        });
+
+        if (response.status != 200) {
+          clearStorageAndNavigate();
         }
-      } else {
-        navigate("/");
+      } catch (error) {
+        clearStorageAndNavigate();
       }
     };
+
+    const clearStorageAndNavigate = () => {
+      localStorage.removeItem("jwt");
+      localStorage.removeItem("username");
+      localStorage.removeItem("id");
+      navigate("/");
+    };
+
     checkJwtToken();
   }, []);
 
@@ -88,6 +110,8 @@ const Chat = () => {
 
   return (
     <div>
+      <h1>Welcome {username}!</h1>
+      <p>Your ID is: {ID}</p>
       <div className="flex h-screen">
         <div className="bg-blue-100 w-1/5 pl-4 pt-4">
           <div className="text-blue-600 font-bold flex gap-2 mb-4">
