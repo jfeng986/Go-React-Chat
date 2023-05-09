@@ -9,8 +9,8 @@ const Chat = () => {
   const [websocket, setWebsocket] = useState(null);
   const [message, setMessage] = useState("");
   const [users, setUsers] = useState([]);
-  //const [messages, setMessages] = useState([]);
-
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const { username, ID, setUsername, setID } = useContext(UserContext);
 
   useEffect(() => {
@@ -60,6 +60,11 @@ const Chat = () => {
 
   useEffect(() => {
     const websocket = new WebSocket("ws://localhost:8080/ws");
+    websocket.onopen = () => {
+      // Once the connection is open, send the JWT to the server
+      const jwtToken = localStorage.getItem("jwt");
+      websocket.send(JSON.stringify({ type: "auth", token: jwtToken }));
+    };
     setWebsocket(websocket);
 
     return () => {
@@ -67,20 +72,8 @@ const Chat = () => {
         websocket.close();
       }
     };
-
-    //websocket.addEventListener("message", handleMessage);
   }, []);
 
-  /*
-  function handleMessage(event) {
-    const messageData = JSON.parse(event.data);
-    if ("online" in messageData) {
-      showOnlineUser(messageData.online);
-    } else {
-      console.log(messageData);
-    }
-  }
-*/
   const sendMessage = () => {
     if (websocket && message) {
       websocket.send(message);
@@ -88,38 +81,51 @@ const Chat = () => {
     }
   };
 
-  /*
-  useEffect(() => {
-    if (ws) {
-      ws.onmessage = (event) => {
-        setMessages((prevMessages) => [...prevMessages, event.data]);
-      };
-    }
-  }, [ws]);
-  *
-  function showOnlinePeople(onlinePeople) {
-    const onlinePeopleSet = {};
-    onlinePeople.forEach(({ userId, username }) => {
-      onlinePeopleSet[userId] = username;
-    });
-    setOnlinePeople(onlinePeopleSet);
-  }
-*/
   return (
     <div>
       <div className="flex h-screen">
-        <div className="bg-blue-100 w-1/5 pl-4 pt-4">
-          <div className="text-blue-600 font-bold flex gap-2 mb-4">
-            GO React Chat
-          </div>
-          {users.map((user) => (
-            <div key={user.id} className="border-b border-gray-100 py-2">
-              {user.username}
+        <div className="bg-blue-50 w-1/5 flex flex-col">
+          <div className="flex-grow">
+            <div className="text-blue-600 font-bold flex gap-2 mb-4">
+              GO React Chat
             </div>
-          ))}
-          <h1>Welcome {username}!</h1>
-          <p>Your ID is: {ID}</p>
-          <button onClick={handleLogout}>Logout</button>
+            {users.map((user) => (
+              <div
+                key={user.id}
+                className={`border-b border-gray-300 py-2 px-2 ${
+                  selectedUserId === user.id
+                    ? "bg-blue-300 font-semibold pl-4"
+                    : ""
+                }`}
+                onClick={() => setSelectedUserId(user.id)}
+              >
+                {user.username}
+              </div>
+            ))}
+          </div>
+          <div className="p-2 text-center flex items-center justify-center">
+            <span className="text-gray-600 font-semibold mr-2 flex">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-6 h-6 "
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {username}
+            </span>
+            <button
+              className="text-blue-500 font-bold py-1 px-2 rounded-md border bg-blue-100"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </div>
         </div>
         <div className="bg-blue-300 w-4/5 p-1 flex flex-col">
           <div className="flex-grow">messages</div>
