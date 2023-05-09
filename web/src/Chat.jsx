@@ -8,7 +8,7 @@ const Chat = () => {
   const navigate = useNavigate();
   const [websocket, setWebsocket] = useState(null);
   const [message, setMessage] = useState("");
-  const [onlinePeople, setOnlinePeople] = useState({});
+  const [users, setUsers] = useState([]);
   //const [messages, setMessages] = useState([]);
 
   const { username, ID, setUsername, setID } = useContext(UserContext);
@@ -26,7 +26,6 @@ const Chat = () => {
             Authorization: `Bearer ${jwtToken}`,
           },
         });
-
         if (response.status != 200) {
           clearStorageAndNavigate();
         }
@@ -36,7 +35,6 @@ const Chat = () => {
         clearStorageAndNavigate();
       }
     };
-
     const clearStorageAndNavigate = () => {
       localStorage.removeItem("jwt");
       navigate("/");
@@ -51,6 +49,16 @@ const Chat = () => {
   };
 
   useEffect(() => {
+    const getUsers = async () => {
+      const response = await axios.get("http://localhost:8080/users");
+      if (response.status === 200) {
+        setUsers(response.data.users);
+      }
+    };
+    getUsers();
+  }, []);
+
+  useEffect(() => {
     const websocket = new WebSocket("ws://localhost:8080/ws");
     setWebsocket(websocket);
 
@@ -63,6 +71,7 @@ const Chat = () => {
     //websocket.addEventListener("message", handleMessage);
   }, []);
 
+  /*
   function handleMessage(event) {
     const messageData = JSON.parse(event.data);
     if ("online" in messageData) {
@@ -71,7 +80,7 @@ const Chat = () => {
       console.log(messageData);
     }
   }
-
+*/
   const sendMessage = () => {
     if (websocket && message) {
       websocket.send(message);
@@ -87,8 +96,7 @@ const Chat = () => {
       };
     }
   }, [ws]);
-  */
-
+  *
   function showOnlinePeople(onlinePeople) {
     const onlinePeopleSet = {};
     onlinePeople.forEach(({ userId, username }) => {
@@ -96,7 +104,7 @@ const Chat = () => {
     });
     setOnlinePeople(onlinePeopleSet);
   }
-
+*/
   return (
     <div>
       <div className="flex h-screen">
@@ -104,9 +112,9 @@ const Chat = () => {
           <div className="text-blue-600 font-bold flex gap-2 mb-4">
             GO React Chat
           </div>
-          {Object.keys(onlinePeople).map((userId) => (
-            <div key={userId} className="border-b border-gray-100 py-2">
-              {onlinePeople[userId]}
+          {users.map((user) => (
+            <div key={user.id} className="border-b border-gray-100 py-2">
+              {user.username}
             </div>
           ))}
           <h1>Welcome {username}!</h1>
